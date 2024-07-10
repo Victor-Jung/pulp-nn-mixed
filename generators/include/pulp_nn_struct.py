@@ -35,6 +35,7 @@ PULPNNSrcDirs = PULPNNInstallPath + "generators/"
 PULPNNInstallSWPath    = PULPNNInstallPath + "XpulpV2/"
 PULPNNInstallHWPath    = PULPNNInstallPath + "XpulpNN/"
 PULPNNInstallExtHWPath = PULPNNInstallPath + "XpulpNN-mixed/"
+PULPNNSnitchInstallPath = PULPNNInstallPath + "DeeploySnitch/"
 
 # Model dependent
 PULPNNInstallPathSW32bit    = PULPNNInstallSWPath + "32bit/" 
@@ -315,11 +316,22 @@ PULPNNSrcDirsExtHW64bit = {'src':                   PULPNNInstallPathExtHW64bit 
                            'golden_model_add':      PULPNNTestFolderExtHW64bit + "include/GoldenModelAdd/",
                            'test':                  PULPNNTestFolderExtHW64bit}
 
+# Snitch Cluster Kernels
+PULPNNDirsDeeploySnitch = {'src':   PULPNNSnitchInstallPath + "src/",
+                            'inc':  PULPNNSnitchInstallPath + "include/",
+                            'add':  PULPNNSnitchInstallPath + "src/Add/"
+                        }
+
 # Folder generation
 def mkdir_p(path):
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
 # Sources folder generation
+def mkdir_src_snitch():
+    mkdir_p(PULPNNDirsDeeploySnitch['src'])
+    mkdir_p(PULPNNDirsDeeploySnitch['inc'])
+    mkdir_p(PULPNNDirsDeeploySnitch['add'])
+
 def mkdir_src(act_prec, ext):
         if ext == 'XpulpV2':
             if act_prec == '32bit':

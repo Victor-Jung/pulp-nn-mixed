@@ -26,6 +26,30 @@ from itertools import product
 
 def main():
 
+
+    # JUNGVI: PULP-NN Snitch kenrel generator
+    extension = "DeeploySnitch"
+    input_sign = [True, True]
+    output_sign = True
+    input_prec = [8, 8]
+    output_prec = 8
+    print("PULP-NN Deeploy Snitch Kernels Generator:")
+
+    pulp_nn_struct.mkdir_src_snitch()
+    kernel_config = pulp_nn_factory.PULPNNKernel(name='add', 
+                                                inp=input_prec, 
+                                                out=output_prec, 
+                                                act_prec="32bit", 
+                                                ext=extension, 
+                                                in_signed=input_sign,
+                                                out_signed=output_sign,
+                                                wt=None, 
+                                                quant=None, 
+                                                mm_fmt='')
+    add_kernel = pulp_nn_factory.PULPNNQuantAdd(kernel=kernel_config, layer=None)
+    api = pulp_nn_factory.kernel(path_tag='add', comp=add_kernel, api="")
+    pulp_nn_factory.header(act_prec=None, ext=extension, api=api)
+
     for a in pulp_nn_init.BN_ACTIVATIONS:
 
         for e in pulp_nn_init.CORE_EXTENTIONS:
@@ -168,7 +192,6 @@ def main():
 
             pulp_nn_factory.header(act_prec=a, ext=e, api=pulp_nn_init.PULPNNAPI)
             pulp_nn_init.PULPNNAPI = ""
-
 
 if __name__ == '__main__':
 

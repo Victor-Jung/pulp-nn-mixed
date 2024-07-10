@@ -1,6 +1,7 @@
 /*
  * ${config.filename}
  * Georg Rutishauser <georgr@iis.ee.ethz.ch>
+ * Victor Jung <jungvi@iis.ee.ethz.ch>
  *
  * Copyright (C) 2018-2020 University of Bologna
  *
@@ -17,8 +18,12 @@
  * limitations under the License.
  */
 
+%if config.kernel.extentions == "DeeploySnitch":
+#include "DeeploySnitchMath.h"
+%else:
 #include "pmsis.h"
 #include "pulp_nn_utils.h"
+%endif
 
 <%
 import numpy as np
@@ -59,16 +64,27 @@ void __attribute__ ((noinline)) ${config.fn_name}(
     uint16_t ch_im_in,
     int      out_requant_flag)
 {
-    int core_id = pi_core_id();
-    int n_cores = NUM_CORES;
+%if config.kernel.extentions == "DeeploySnitch":
+    int core_id = snrt_global_compute_core_idx();
+    int n_cores = snrt_global_compute_core_num();
 
-    if (dim_im_in_y < NUM_CORES)
-    {
+    if (dim_im_in_y < n_cores){
       n_cores = dim_im_in_y;
     }
 
-    int  Log2Core = log2(n_cores);
+    int Log2Core = INT_LOG2(n_cores);
+    int chunck = (dim_im_in_y >> Log2Core) + ((dim_im_in_y & (n_cores - 1)) != 0);
+%else:
+    int core_id = pi_core_id();
+    int n_cores = NUM_CORES;
+
+    if (dim_im_in_y < NUM_CORES){
+      n_cores = dim_im_in_y;
+    }
+
+    int Log2Core = log2(n_cores);
     int chunck = (dim_im_in_y >> Log2Core) + ((dim_im_in_y & (NUM_CORES-1))!=0);
+%endif
 
     ${act_t} in1_rq1, in1_rq2, in1_rq3, in1_rq4,
              in2_rq1, in2_rq2, in2_rq3, in2_rq4;
@@ -115,8 +131,13 @@ byte_chan_shift_out = int(np.log2(els_per_byte_out))
     int ch_im_in2_r = ch_im_in >> ${byte_chan_shift_in2};
     int ch_im_out_r = ch_im_in >> ${byte_chan_shift_out};
 
-    int start = min(chunck * core_id, dim_im_in_y);
+%if config.kernel.extentions == "DeeploySnitch":
+    int start = MIN(chunck * core_id, dim_im_in_y);
+    int stop = MIN(start + chunck, dim_im_in_y);
+%else:
+	int start = min(chunck * core_id, dim_im_in_y);
     int stop = min(start + chunck, dim_im_in_y);
+%endif
 
     ${pt_in1} *target1 = pIn1 + start * ch_im_in1_r * dim_im_in_x;
     ${pt_in2} *target2 = pIn2 + start * ch_im_in2_r * dim_im_in_x;
@@ -216,5 +237,7 @@ byte_chan_shift_out = int(np.log2(els_per_byte_out))
         pOutBuffer++;
     }
 %endif
+%if config.kernel.extentions != "DeeploySnitch":
    pi_cl_team_barrier();
+%endif
 }

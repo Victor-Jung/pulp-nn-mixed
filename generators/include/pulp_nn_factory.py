@@ -30,7 +30,7 @@ from models.linear_quantized_modules import ClippedLinearQuantization, LearnedCl
         ScaledThresholdsQuantization4d
 from include.pulp_nn_struct import PULPNNSrcDirsSW32bit, PULPNNSrcDirsSW64bit, PULPNNSrcDirsHW32bit, PULPNNSrcDirsHW64bit, PULPNNSrcDirsExtHW32bit, PULPNNSrcDirsExtHW64bit,\
         PULPNNInstallPathSW32bit, PULPNNInstallPathSW64bit, PULPNNInstallPathHW32bit, PULPNNInstallPathHW64bit, PULPNNInstallSWPath, PULPNNInstallHWPath, PULPNNInstallExtHWPath,\
-        PULPNNInstallPathExtHW32bit, PULPNNInstallPathHW64bit
+        PULPNNInstallPathExtHW32bit, PULPNNInstallPathHW64bit, PULPNNDirsDeeploySnitch
 
 ##################################################################################### PULP-NN Factory ############################################################
 
@@ -734,6 +734,8 @@ def header(act_prec, ext, api):
             new_file = open(PULPNNSrcDirsExtHW32bit['inc'] + "/pulp_nn_kernels.h", 'w')
         elif act_prec == '64bit':
             new_file = open(PULPNNSrcDirsExtHW64bit['inc'] + "/pulp_nn_kernels.h", 'w')
+    elif ext == 'DeeploySnitch':
+        new_file = open(PULPNNDirsDeeploySnitch['inc'] + "/pulp_nn_kernels.h", 'w')
     new_file.write(Template(filename="templates/pulp_nn_kernels.t", strict_undefined=True).render(PULPNNAPI=api, PULPNNEXT=ext))
     new_file.close()
 
@@ -774,6 +776,8 @@ def kernel(path_tag, comp, api):
             new_file = open(PULPNNSrcDirsExtHW32bit[path_tag] + comp.filename, 'w')
         elif comp.kernel.act_prec == '64bit':
             new_file = open(PULPNNSrcDirsExtHW64bit[path_tag] + comp.filename, 'w')
+    elif comp.kernel.extentions == 'DeeploySnitch':
+        new_file = open(PULPNNDirsDeeploySnitch[path_tag] + comp.filename, 'w')
     new_file.write(comp.generate_code())
     new_file.close()
 
